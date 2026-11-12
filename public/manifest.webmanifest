@@ -1,0 +1,26 @@
+{
+  "name": "MorphCAD — แปลงไฟล์ CAD 3D/2D",
+  "short_name": "MorphCAD",
+  "description": "แปลงไฟล์ STEP, IGES, SLDPRT, STL, OBJ, GLB, DXF, SVG สร้างแบบงาน 2D และ BOM/CBD ในเครื่อง",
+  "lang": "th",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07080b",
+  "theme_color": "#07080b",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "application/octet-stream": [".step", ".stp", ".iges", ".igs", ".sldprt", ".stl", ".3mf", ".glb"],
+        "model/obj": [".obj"],
+        "application/dxf": [".dxf"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="th" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>MorphCAD — แปลงไฟล์ CAD 3D และ 2D บนเบราว์เซอร์</title>
+    <meta name="description" content="แปลงไฟล์ STEP, IGES, STL, OBJ, GLB, 3MF, DXF, SVG และอื่นๆ สร้างแบบงาน 2D จากโมเดล 3D หรือขึ้นรูป 3D จากแบบ 2D ประมวลผลในเครื่องของคุณ 100%" />
+    <meta name="theme-color" content="#0a0b0f" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffb547'/%3E%3Cstop offset='1' stop-color='%23ff5a1f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='%230f1117'/%3E%3Cpath d='M16 5l10 5.8v11.4L16 28 6 22.2V10.8z' fill='none' stroke='url(%23g)' stroke-width='2.2' stroke-linejoin='round'/%3E%3Cpath d='M16 5l10 5.8L16 16.6 6 10.8z' fill='url(%23g)'/%3E%3Cpath d='M16 16.6V28' stroke='url(%23g)' stroke-width='2.2'/%3E%3C/svg%3E" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <script>
+      try {
+        const saved = localStorage.getItem('morphcad-theme');
+        const theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.dataset.theme = theme;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div class="bg-decor" aria-hidden="true"><div class="bg-grid"></div><div class="bg-glow bg-glow--a"></div><div class="bg-glow bg-glow--b"></div></div>
+
+    <header class="topbar">
+      <a class="brand" href="#" id="brand-home" aria-label="MorphCAD หน้าหลัก">
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+          <defs><linearGradient id="brandg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb547" /><stop offset="1" stop-color="#ff5a1f" /></linearGradient></defs>
+          <path d="M16 3.5l11 6.35v12.3L16 28.5 5 22.15V9.85z" fill="none" stroke="url(#brandg)" stroke-width="2.2" stroke-linejoin="round" />
+          <path d="M16 3.5l11 6.35L16 16.2 5 9.85z" fill="url(#brandg)" />
+          <path d="M16 16.2v12.3" stroke="url(#brandg)" stroke-width="2.2" />
+          <path d="M5 22.15l11-5.95" stroke="url(#brandg)" stroke-width="1.6" stroke-dasharray="2 2.2" opacity=".75" />
+        </svg>
+        <span class="brand__name">Morph<b>CAD</b></span>
+      </a>
+
+      <nav class="topnav landing-only" aria-label="เมนูหลัก">
+        <a href="#modes">โหมดการแปลง</a>
+        <a href="#formats">รูปแบบไฟล์</a>
+        <a href="#how">วิธีใช้</a>
+        <a href="#faq">คำถามที่พบบ่อย</a>
+      </nav>
+
+      <div class="crumbs workspace-only" id="crumbs">
+        <button class="btn btn--ghost btn--sm" id="btn-home"><i data-icon="arrow-right" class="flip-x" data-size="16"></i>หน้าหลัก</button>
+        <span class="crumbs__sep">/</span>
+        <span class="crumbs__file" id="crumb-file">—</span>
+      </div>
+
+      <div class="topbar__actions">
+        <span class="privacy-pill" title="ไฟล์ทั้งหมดประมวลผลในเบราว์เซอร์ของคุณ"><i data-icon="shield-check" data-size="15"></i><span>ไม่อัปโหลดไฟล์</span></span>
+        <button class="btn btn--ghost btn--sm" id="btn-install" hidden data-tip="ติดตั้งเป็นแอปบนเครื่อง ใช้งานได้แม้ไม่มีอินเทอร์เน็ต"><i data-icon="monitor" data-size="16"></i><span>ติดตั้งแอป</span></button>
+        <button class="icon-btn" id="theme-toggle" aria-label="สลับธีมสว่าง/มืด" data-tip="สลับธีม">
+          <i data-icon="sun" class="theme-ico theme-ico--sun"></i><i data-icon="moon" class="theme-ico theme-ico--moon"></i>
+        </button>
+        <button class="btn btn--primary btn--sm" id="btn-open"><i data-icon="upload" data-size="16"></i><span>เปิดไฟล์</span></button>
+      </div>
+    </header>
+
+    <input type="file" id="file-input" multiple hidden accept=".step,.stp,.iges,.igs,.brep,.brp,.sldprt,.stl,.obj,.mtl,.ply,.glb,.gltf,.bin,.fbx,.3mf,.dae,.amf,.3ds,.wrl,.vrml,.off,.dxf,.svg,.png,.jpg,.jpeg,.webp,.tga,.bmp,.ktx2" />
+
+    <!-- ============================================================ LANDING -->
+    <main id="landing" class="landing">
+      <section class="hero">
+        <div class="hero__copy">
+          <span class="eyebrow"><span class="eyebrow__dot"></span>ประมวลผลในเบราว์เซอร์ 100% · ไฟล์ไม่ออกจากเครื่อง</span>
+          <h1 class="hero__title">แปลงไฟล์ CAD<br /><span class="grad-text">3D ⇄ 2D</span> ในคลิกเดียว</h1>
+          <p class="hero__lead">เปิดดูและแปลง STEP, IGES, STL, OBJ, GLB, 3MF, DXF, SVG และอีกมากมาย — สร้างแบบงาน 2D พร้อมเส้นซ่อนและขนาดจากโมเดล 3D หรือขึ้นรูปโมเดล 3D จากแบบ 2D ได้ทันที</p>
+
+          <label class="dropzone" id="dropzone" tabindex="0">
+            <svg class="dropzone__border" aria-hidden="true"><rect x="1" y="1" rx="22" ry="22" /></svg>
+            <span class="dropzone__icon"><i data-icon="upload" data-size="26"></i></span>
+            <span class="dropzone__title">ลากไฟล์มาวางที่นี่</span>
+            <span class="dropzone__sub">หรือ <u>เลือกไฟล์จากเครื่อง</u> · เลือกหลายไฟล์ได้ (เช่น OBJ + MTL, glTF + BIN)</span>
+            <span class="dropzone__formats">STEP · IGES · SLDPRT · STL · OBJ · GLB · FBX · 3MF · PLY · DXF · SVG</span>
+          </label>
+
+          <div class="samples">
+            <span class="samples__label">ยังไม่มีไฟล์? ลองตัวอย่าง</span>
+            <button class="chip-btn" id="sample-3d"><i data-icon="cuboid" data-size="16"></i>ชิ้นงาน 3D</button>
+            <button class="chip-btn" id="sample-2d"><i data-icon="pen-tool" data-size="16"></i>แบบ 2D (DXF)</button>
+          </div>
+        </div>
+
+        <div class="hero__visual" aria-hidden="true">
+          <div class="blueprint">
+            <div class="blueprint__ruler blueprint__ruler--top"></div>
+            <div class="blueprint__ruler blueprint__ruler--left"></div>
+            <canvas id="hero-canvas"></canvas>
+            <span class="corner corner--tl"></span><span class="corner corner--tr"></span><span class="corner corner--bl"></span><span class="corner corner--br"></span>
+            <div class="blueprint__meta">
+              <span>BRACKET_ASSY.STEP</span><span>140 × 90 × 42 mm</span>
+            </div>
+            <div class="float-tag float-tag--a"><b>STEP</b><i data-icon="arrow-right" data-size="14"></i><b>STL</b></div>
+            <div class="float-tag float-tag--b"><i data-icon="drafting-compass" data-size="14"></i>3D → แบบงาน 2D</div>
+            <div class="float-tag float-tag--c"><b>DXF</b><i data-icon="arrow-right" data-size="14"></i><b>3D</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-band" aria-label="ภาพรวม">
+        <div class="stat"><b>20+</b><span>รูปแบบไฟล์</span></div>
+        <div class="stat"><b>4</b><span>โหมดการแปลง</span></div>
+        <div class="stat"><b>0 ไบต์</b><span>ที่ส่งขึ้นเซิร์ฟเวอร์</span></div>
+        <div class="stat"><b>WASM</b><span>OpenCascade ในเบราว์เซอร์</span></div>
+      </section>
+
+      <section class="section" id="modes">
+        <header class="section__head">
+          <span class="kicker">โหมดการแปลง</span>
+          <h2>ครบทุกทิศทาง ระหว่าง 3D และ 2D</h2>
+          <p>เลือกปลายทางได้อิสระ ระบบจะแสดงตัวอย่างผลลัพธ์ให้ตรวจก่อนดาวน์โหลดทุกครั้ง</p>
+        </header>
+        <div class="modes">
+          <article class="mode-card" style="--tone: var(--orange)">
+            <div class="mode-card__flow"><span><i data-icon="box" data-size="22"></i></span><i data-icon="arrow-right" data-size="16"></i><span><i data-icon="boxes" data-size="22"></i></span></div>
+            <h3>3D → 3D</h3>
+            <p>แปลงระหว่าง STEP, IGES, STL, OBJ, GLB, 3MF, PLY และ USDZ พร้อมปรับหน่วยและแกนตั้ง</p>
+            <div class="tags"><span>STEP→STL</span><span>OBJ→GLB</span><span>STL→3MF</span></div>
+          </article>
+          <article class="mode-card" style="--tone: var(--cyan)">
+            <div class="mode-card__flow"><span><i data-icon="box" data-size="22"></i></span><i data-icon="arrow-right" data-size="16"></i><span><i data-icon="drafting-compass" data-size="22"></i></span></div>
+            <h3>3D → 2D แบบงาน</h3>
+            <p>สร้างภาพฉายด้านหน้า บน ข้าง และไอโซเมตริก พร้อมเส้นซ่อน ขนาดรวม และกรอบชื่อแบบ</p>
+            <div class="tags"><span>DXF</span><span>PDF</span><span>SVG</span></div>
+          </article>
+          <article class="mode-card" style="--tone: var(--violet)">
+            <div class="mode-card__flow"><span><i data-icon="pen-tool" data-size="22"></i></span><i data-icon="arrow-right" data-size="16"></i><span><i data-icon="file-text" data-size="22"></i></span></div>
+            <h3>2D → 2D</h3>
+            <p>แปลง DXF ⇄ SVG และส่งออกเป็น PDF หรือ PNG ความละเอียดสูง เลือกเปิด/ปิดเลเยอร์ได้</p>
+            <div class="tags"><span>DXF→SVG</span><span>SVG→DXF</span><span>DXF→PDF</span></div>
+          </article>
+          <article class="mode-card" style="--tone: var(--green)">
+            <div class="mode-card__flow"><span><i data-icon="pen-tool" data-size="22"></i></span><i data-icon="arrow-right" data-size="16"></i><span><i data-icon="cuboid" data-size="22"></i></span></div>
+            <h3>2D → 3D Extrude</h3>
+            <p>ขึ้นรูปโปรไฟล์ปิดด้วยความหนาที่กำหนด รองรับรูภายใน ส่งออก STL หรือ 3MF พร้อมพิมพ์ 3D</p>
+            <div class="tags"><span>DXF→STL</span><span>SVG→3MF</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="formats">
+        <header class="section__head">
+          <span class="kicker">รูปแบบไฟล์</span>
+          <h2>รองรับไฟล์ยอดนิยมในงานวิศวกรรม</h2>
+          <p>ทั้ง CAD แบบ B-Rep, mesh สำหรับงานพิมพ์ 3D, ไฟล์สำหรับเว็บและ AR รวมถึงแบบ 2D</p>
+        </header>
+        <div class="format-table" role="table" aria-label="ตารางรูปแบบไฟล์">
+          <div class="ft-row ft-head" role="row"><span role="columnheader">รูปแบบ</span><span role="columnheader">ใช้สำหรับ</span><span role="columnheader">นำเข้า</span><span role="columnheader">ส่งออก</span></div>
+          <div id="format-rows"></div>
+        </div>
+      </section>
+
+      <section class="section" id="how">
+        <header class="section__head">
+          <span class="kicker">วิธีใช้</span>
+          <h2>ใช้งานง่ายใน 3 ขั้นตอน</h2>
+        </header>
+        <ol class="steps">
+          <li class="step"><span class="step__num">01</span><i data-icon="folder-open" data-size="26"></i><h3>เลือกไฟล์</h3><p>ลากไฟล์มาวาง หรือเลือกหลายไฟล์พร้อมกัน เช่น OBJ คู่กับ MTL และเท็กซ์เจอร์</p></li>
+          <li class="step"><span class="step__num">02</span><i data-icon="sliders-horizontal" data-size="26"></i><h3>ตรวจดูและตั้งค่า</h3><p>หมุนดูโมเดล ตัดหน้าตัด ซ่อนชิ้นส่วน เลือกหน่วย แกน และรูปแบบปลายทาง</p></li>
+          <li class="step"><span class="step__num">03</span><i data-icon="download" data-size="26"></i><h3>แปลงและดาวน์โหลด</h3><p>กดปุ่มเดียว ไฟล์ถูกสร้างและดาวน์โหลดทันที พร้อมประวัติให้ดาวน์โหลดซ้ำ</p></li>
+        </ol>
+      </section>
+
+      <section class="section">
+        <div class="privacy-card">
+          <div class="privacy-card__icon"><i data-icon="shield-check" data-size="34"></i></div>
+          <div>
+            <h2>ไฟล์ของคุณไม่เคยออกจากเครื่อง</h2>
+            <p>การอ่าน แปลง และสร้างไฟล์ทั้งหมดทำงานด้วย WebAssembly และ WebGL บนเบราว์เซอร์ของคุณเอง จึงปลอดภัยสำหรับแบบงานที่เป็นความลับ ไม่มีการสมัครสมาชิก ไม่มีการจำกัดจำนวนครั้ง</p>
+          </div>
+          <ul class="privacy-card__list">
+            <li><i data-icon="cloud-off" data-size="16"></i>ไม่มีเซิร์ฟเวอร์รับไฟล์</li>
+            <li><i data-icon="cpu" data-size="16"></i>ใช้พลังเครื่องของคุณ</li>
+            <li><i data-icon="lock" data-size="16"></i>เหมาะกับงานลับ</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" id="faq">
+        <header class="section__head">
+          <span class="kicker">คำถามที่พบบ่อย</span>
+          <h2>ข้อควรรู้ก่อนใช้งาน</h2>
+        </header>
+        <div class="faq">
+          <details>
+            <summary>ทำไมเปิดไฟล์ DWG ไม่ได้?</summary>
+            <p>DWG เป็นรูปแบบปิดของ Autodesk ที่ไม่มีไลบรารีเปิดสำหรับเบราว์เซอร์ โปรดบันทึกเป็น DXF จาก AutoCAD, BricsCAD หรือ LibreCAD (Save As → DXF) แล้วนำมาแปลงได้ทันที</p>
+          </details>
+          <details>
+            <summary>เปิดไฟล์ SolidWorks (.SLDPRT) ได้ไหม?</summary>
+            <p>ได้สำหรับไฟล์จาก SolidWorks 2015 ขึ้นไป โดยอ่าน mesh ที่ SolidWorks บันทึกไว้สำหรับแสดงผล รูปทรงจึงถูกต้องแต่ความละเอียดเท่ากับค่าคุณภาพภาพตอนบันทึก และไม่มีพื้นผิว B-Rep จริง หากต้องการความแม่นยำสูงสุดให้ Save As เป็น STEP จาก SolidWorks ส่วนไฟล์ Assembly (.SLDASM) ยังไม่รองรับ</p>
+          </details>
+          <details>
+            <summary>ส่งออกเป็น STEP หรือ IGES ได้ไหม?</summary>
+            <p>ยังไม่รองรับ เพราะ STEP/IGES เก็บพื้นผิวคณิตศาสตร์ (B-Rep) การแปลงจาก mesh กลับเป็น STEP จะได้เพียงสามเหลี่ยมจำนวนมาก ไม่ใช่พื้นผิวจริง จึงแนะนำให้ส่งออกจากโปรแกรม CAD ต้นทางโดยตรง</p>
+          </details>
+          <details>
+            <summary>แบบงาน 2D ที่สร้างจากโมเดล 3D แม่นยำแค่ไหน?</summary>
+            <p>เส้นในแบบมาจากขอบจริงของโมเดลที่ฉายแบบออร์โธกราฟิก ขนาดเป็นสเกล 1:1 ในไฟล์ DXF และพิมพ์ได้ตามสเกลที่ระบุใน PDF/SVG ส่วนการแยกเส้นซ่อนคำนวณจาก depth buffer ความละเอียดสูง เหมาะสำหรับแบบประกอบการผลิตและเอกสารอ้างอิง</p>
+          </details>
+          <details>
+            <summary>ไฟล์ใหญ่สุดได้เท่าไร?</summary>
+            <p>ขึ้นกับหน่วยความจำของเครื่อง โดยทั่วไปไฟล์ STEP ระดับหลายสิบ MB และ STL หลายล้านสามเหลี่ยมใช้งานได้ หากไฟล์ STEP ใหญ่มาก ลองเลือกความละเอียด mesh แบบ "หยาบ"</p>
+          </details>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="footer__brand"><b>Morph<span>CAD</span></b><span>เครื่องมือแปลงไฟล์ CAD ที่ทำงานบนเบราว์เซอร์</span></div>
+        <div class="footer__credits">ขับเคลื่อนด้วย three.js · OpenCascade (occt-import-js) · dxf-parser · jsPDF</div>
+      </footer>
+    </main>
+
+    <!-- ============================================================ WORKSPACE -->
+    <main id="workspace" class="workspace" hidden>
+      <aside class="panel panel--left" id="panel-left" aria-label="ข้อมูลไฟล์"></aside>
+
+      <section class="stage" aria-label="พื้นที่แสดงผล">
+        <div class="stage__bar">
+          <div class="seg stage-tabs" id="stage-tabs" role="tablist"></div>
+          <div class="stage__hint" id="stage-hint"></div>
+        </div>
+
+        <div class="viewport viewport--3d" id="viewport-3d">
+          <div class="vp-toolbar" id="toolbar-3d">
+            <div class="tb-group">
+              <button class="tb-btn" data-view="iso" data-tip="ไอโซเมตริก (0)"><i data-icon="cuboid" data-size="17"></i></button>
+              <button class="tb-btn" data-view="front" data-tip="ด้านหน้า (1)"><span class="tb-txt">หน้า</span></button>
+              <button class="tb-btn" data-view="top" data-tip="ด้านบน (2)"><span class="tb-txt">บน</span></button>
+              <button class="tb-btn" data-view="right" data-tip="ด้านขวา (3)"><span class="tb-txt">ขวา</span></button>
+              <button class="tb-btn" data-action="fit" data-tip="พอดีจอ (F)"><i data-icon="maximize" data-size="17"></i></button>
+            </div>
+            <div class="tb-group">
+              <button class="tb-btn" data-mode="original" data-tip="สีจริง"><i data-icon="sparkles" data-size="17"></i></button>
+              <button class="tb-btn" data-mode="clay" data-tip="ผิวเรียบ (ดินปั้น)"><i data-icon="cylinder" data-size="17"></i></button>
+              <button class="tb-btn" data-mode="wire" data-tip="โครงลวด"><i data-icon="grid-3x3" data-size="17"></i></button>
+              <button class="tb-btn" data-mode="xray" data-tip="เอ็กซเรย์"><i data-icon="scan-eye" data-size="17"></i></button>
+            </div>
+            <div class="tb-group">
+              <button class="tb-btn" data-toggle="edges" data-tip="เส้นขอบ"><i data-icon="frame" data-size="17"></i></button>
+              <button class="tb-btn" data-toggle="ortho" data-tip="มุมมองออร์โธกราฟิก"><i data-icon="axis-3d" data-size="17"></i></button>
+              <button class="tb-btn" data-toggle="section" data-tip="ตัดหน้าตัด"><i data-icon="slice" data-size="17"></i></button>
+              <button class="tb-btn" data-toggle="rotate" data-tip="หมุนอัตโนมัติ"><i data-icon="rotate-3d" data-size="17"></i></button>
+              <button class="tb-btn" data-toggle="grid" data-tip="กริด"><i data-icon="grid-2x2" data-size="17"></i></button>
+              <button class="tb-btn" data-toggle="shadows" data-tip="เงา"><i data-icon="sun" data-size="17"></i></button>
+            </div>
+          </div>
+
+          <div class="section-card" id="section-card" hidden>
+            <div class="seg seg--sm" id="section-axis">
+              <button data-axis="x">X</button><button data-axis="y">Y</button><button data-axis="z" class="is-active">Z</button>
+            </div>
+            <input type="range" id="section-range" min="0" max="1" step="0.001" value="0.5" aria-label="ตำแหน่งระนาบตัด" />
+            <button class="tb-btn" id="section-flip" data-tip="กลับด้าน"><i data-icon="rotate-ccw" data-size="16"></i></button>
+          </div>
+
+          <div class="vp-info" id="info-3d"></div>
+          <div class="vp-help"><span><kbd>ซ้าย</kbd> หมุน</span><span><kbd>ขวา</kbd> เลื่อน</span><span><kbd>ล้อ</kbd> ซูม</span></div>
+        </div>
+
+        <div class="viewport viewport--2d" id="viewport-2d" hidden>
+          <div class="vp-toolbar">
+            <div class="tb-group">
+              <button class="tb-btn" data-2d="fit" data-tip="พอดีจอ"><i data-icon="maximize" data-size="17"></i></button>
+              <button class="tb-btn" data-2d="in" data-tip="ซูมเข้า"><i data-icon="zoom-in" data-size="17"></i></button>
+              <button class="tb-btn" data-2d="out" data-tip="ซูมออก"><i data-icon="zoom-out" data-size="17"></i></button>
+            </div>
+          </div>
+          <div class="vp-info vp-info--mono" id="info-2d"></div>
+          <div class="vp-coords" id="coords-2d"></div>
+        </div>
+
+        <div class="stage__overlay" id="stage-overlay" hidden>
+          <div class="loader">
+            <div class="loader__ring"><span></span><span></span><span></span></div>
+            <p id="overlay-text">กำลังประมวลผล…</p>
+            <div class="loader__bar"><span></span></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel panel--right" aria-label="แปลงไฟล์">
+        <div class="panel__section">
+          <h3 class="panel__title"><i data-icon="wand-sparkles" data-size="16"></i>แปลงเป็น</h3>
+          <div id="targets"></div>
+        </div>
+        <div class="panel__section" id="options-section">
+          <h3 class="panel__title"><i data-icon="settings-2" data-size="16"></i>ตัวเลือก <span class="panel__badge" id="target-badge"></span></h3>
+          <div id="options"></div>
+        </div>
+        <div class="convert-bar">
+          <button class="btn btn--primary btn--lg btn--block" id="btn-convert">
+            <span class="btn__spinner"></span>
+            <i data-icon="download" data-size="18"></i>
+            <span id="convert-label">แปลงและดาวน์โหลด</span>
+          </button>
+          <p class="convert-bar__note" id="convert-note"></p>
+        </div>
+        <div class="panel__section" id="history-section" hidden>
+          <h3 class="panel__title"><i data-icon="history" data-size="16"></i>ไฟล์ที่แปลงแล้ว</h3>
+          <ul class="history" id="history"></ul>
+        </div>
+      </aside>
+    </main>
+
+    <div class="drop-overlay" id="drop-overlay" hidden>
+      <div class="drop-overlay__inner"><i data-icon="upload" data-size="40"></i><b>วางไฟล์เพื่อเปิด</b><span>รองรับ 3D และ 2D กว่า 20 รูปแบบ</span></div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

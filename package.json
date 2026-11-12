@@ -1,0 +1,60 @@
+{
+  "name": "morphcad",
+  "private": true,
+  "version": "1.0.1",
+  "description": "MorphCAD — แปลงไฟล์ CAD 3D/2D สร้างแบบงาน และ BOM/CBD ในเครื่อง",
+  "author": "MorphCAD",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "app": "node scripts/launch.mjs --build",
+    "desktop": "vite build && electron .",
+    "dist:win": "vite build && electron-builder --win nsis",
+    "postinstall": "node scripts/copy-vendor.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/ibm-plex-sans-thai": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/prompt": "5.3.0",
+    "dxf-parser": "1.1.2",
+    "electron": "45.3.1",
+    "electron-builder": "26.18.0",
+    "jspdf": "4.2.1",
+    "lucide": "1.61.0",
+    "occt-import-js": "0.0.23",
+    "playwright-core": "1.64.1",
+    "three": "0.186.1",
+    "vite": "8.3.5"
+  },
+  "build": {
+    "appId": "com.morphcad.desktop",
+    "productName": "MorphCAD",
+    "copyright": "MorphCAD",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MorphCAD",
+      "artifactName": "MorphCAD-Setup-${version}.${ext}",
+      "uninstallDisplayName": "MorphCAD"
+    }
+  }
+}
